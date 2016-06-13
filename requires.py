@@ -43,7 +43,7 @@ class HBaseRequires(RelationBase):
             master_port = conv.get_remote('master_port')
             regionserver_port = conv.get_remote('regionserver_port')
             thrift_port = conv.get_remote('thrift_port')
-            if port:
+            if master_port:
                 servers.append({
                     'host': conv.get_remote('private-address'),
                     'master_port': master_port,
