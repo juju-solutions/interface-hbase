@@ -42,10 +42,11 @@ layer will set the following states, as appropriate:
   provider. At this point, the charm waits for HBase configuration details.
 
   * `{relation_name}.ready`  HBase is now ready for clients. The client
-  charm should get Zookeeper configuration details using:
+  charm should get HBase configuration details using:
 
-    * `servers()` returns a list of HBase units 
-                     {host: xyz, master_port: n, regionserver_port: m, thrift_port: o} dicts
+    * `hbase_servers()` returns a list of HBase unit dicts:
+
+          {host: xyz, master_port: n, regionserver_port: m, thrift_port: o}
 
 
 HBase client example:
@@ -60,8 +61,8 @@ def wait_for_hbase(hbase):
 @when('hbaser.ready')
 @when_not('myservice.configured')
 def configure(hbase):
-    for unit in hbase.servers():
-        add_hbase_master(unit['host'], zk_unit['master_port'])
+    for unit in hbase.hbase_servers():
+        add_hbase(unit['host'], unit['master_port'], unit['regionserver_port'])
     set_state('myservice.configured')
 ```
 

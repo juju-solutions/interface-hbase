@@ -33,10 +33,15 @@ class HBaseProvides(RelationBase):
         self.remove_state('{relation_name}.ready')
         self.remove_state('{relation_name}.joined')
 
-    def send_port(self, master_port, regionserver_port, thrift_port):
+    def send_connection(self, master_port, regionserver_port, thrift_port,
+                        host=None):
         conv = self.conversation()
         conv.set_remote(data={
             'master_port': master_port,
             'regionserver_port': regionserver_port,
             'thrift_port': thrift_port,
+            'host': host,
         })
+
+    # Synonym for send_connection (for now)
+    send_port = send_connection
