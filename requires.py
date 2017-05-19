@@ -23,13 +23,11 @@ class HBaseRequires(RelationBase):
         conv = self.conversation()
         conv.set_state('{relation_name}.joined')
 
-    @hook('{requires:zookeeper}-relation-changed')
+    @hook('{requires:hbase}-relation-changed')
     def changed(self):
         conv = self.conversation()
-        if self.zookeepers():
-            conv.set_state('{relation_name}.ready')
-        else:
-            conv.remove_state('{relation_name}.ready')
+        conv.toggle_state('{relation_name}.ready',
+                          active=self.is_hbase_started())
 
     @hook('{requires:hbase}-relation-departed')
     def departed(self):
@@ -37,7 +35,14 @@ class HBaseRequires(RelationBase):
         conv.remove_state('{relation_name}.ready')
         conv.remove_state('{relation_name}.joined')
 
+    def is_hbase_started(self):
+        return self.get_remote('hbase_started', 'false').lower() == 'true'
+
     def hbase_servers(self):
+        '''
+        Get a list of hbase server dicts. Each dict contains the fqdn, port
+        info, and zookeeper connection string for an hbase provider.
+        '''
         servers = []
         for conv in self.conversations():
             master_port = conv.get_remote('master_port')
@@ -45,11 +50,13 @@ class HBaseRequires(RelationBase):
             thrift_port = conv.get_remote('thrift_port')
             host = conv.get_remote('host') or conv.get_remote(
                 'private-address')
+            zk_connect = conv.get_remote('zk_connect')
             if master_port:
                 servers.append({
                     'host': host,
                     'master_port': master_port,
                     'regionserver_port': regionserver_port,
                     'thrift_port': thrift_port,
+                    'zk_connect': zk_connect,
                 })
         return servers
